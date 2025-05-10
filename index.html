@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu com Carrinho</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://unpkg.com/vue@3"></script>
+</head>
+<body>
+<div id="app" class="container mt-5">
+  <h2 class="mb-4">Itens do Menu</h2>
+  <div class="row">
+    <div class="col-md-3 mb-3" v-for="produto in produtos" :key="produto.id">
+      <div class="card h-100 text-center">
+        <div class="card-body">
+          <i :class="produto.icone" style="font-size: 2rem;"></i>
+          <h5 class="card-title mt-2">{{ produto.nome }}</h5>
+          <p class="card-text">R$ {{ produto.preco.toFixed(2) }}</p>
+          <button class="btn btn-primary w-100" @click="adicionarAoCarrinho(produto)">
+            <i class="bi bi-cart-plus"></i> Adicionar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="mt-5">Carrinho</h3>
+  <ul class="list-group mb-3">
+    <li v-for="(item, index) in carrinho" :key="index" class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <i :class="item.icone" class="me-2"></i> {{ item.nome }} x{{ item.qtd }} - R$ {{ (item.preco * item.qtd).toFixed(2) }}
+      </div>
+      <button class="btn btn-sm btn-outline-danger" @click="removerItem(index)">
+        <i class="bi bi-dash-circle"></i>
+      </button>
+    </li>
+  </ul>
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+    <div class="h5 mb-0">Total: <strong>R$ {{ totalCarrinho.toFixed(2) }}</strong></div>
+
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <span>Subtrair:</span>
+      <button class="btn btn-outline-secondary btn-sm" @click="subtrair(100)">-100</button>
+      <button class="btn btn-outline-secondary btn-sm" @click="subtrair(150)">-150</button>
+      <button class="btn btn-outline-secondary btn-sm" @click="subtrair(200)">-200</button>
+      <button class="btn btn-outline-secondary btn-sm" @click="subtrair(250)">-250</button>
+
+      <input type="number" class="form-control form-control-sm" v-model.number="valorPersonalizado" placeholder="Outro valor" style="width: 100px;">
+      <button class="btn btn-outline-primary btn-sm" @click="subtrair(valorPersonalizado)">Subtrair</button>
+
+      <span class="fw-bold">Resultado: R$ {{ resultadoSubtracao.toFixed(2) }}</span>
+    </div>
+  </div>
+
+  <button class="btn btn-danger" @click="limparCarrinho" :disabled="carrinho.length === 0">
+    <i class="bi bi-trash"></i> Limpar Carrinho
+  </button>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    return {
+      produtos: [
+        { id: 1, nome: 'Refrigerante/água', preco: 5.00, icone: 'bi bi-cup-straw' },
+        { id: 2, nome: 'Cerveja', preco: 15, icone: 'bi bi-cup-hot' },
+        { id: 3, nome: 'Entrada', preco: 12.00, icone: 'bi bi-egg-fried' },
+        { id: 4, nome: 'Janta', preco: 55.00, icone: 'bi bi-basket' },
+        { id: 4, nome: 'Janta sócio', preco: 50.00, icone: 'bi bi-basket' }
+      ],
+      carrinho: [],
+      resultadoSubtracao: 0,
+      valorPersonalizado: null
+    };
+  },
+  computed: {
+    totalCarrinho() {
+      return this.carrinho.reduce((total, item) => total + item.preco * item.qtd, 0);
+    }
+  },
+  methods: {
+    adicionarAoCarrinho(produto) {
+      const itemExistente = this.carrinho.find(item => item.id === produto.id);
+      if (itemExistente) {
+        itemExistente.qtd++;
+      } else {
+        this.carrinho.push({ ...produto, qtd: 1 });
+      }
+      this.resultadoSubtracao = this.totalCarrinho;
+    },
+    removerItem(index) {
+      const item = this.carrinho[index];
+      if (item.qtd > 1) {
+        item.qtd--;
+      } else {
+        this.carrinho.splice(index, 1);
+      }
+      this.resultadoSubtracao = this.totalCarrinho;
+    },
+    limparCarrinho() {
+      this.carrinho = [];
+      this.resultadoSubtracao = 0;
+      this.valorPersonalizado = null;
+    },
+    subtrair(valor) {
+      if (!isNaN(valor)) {
+        this.resultadoSubtracao = this.totalCarrinho - valor;
+      }
+    }
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
+
